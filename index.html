@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Briscola con Carte Francesi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0f4c75 0%, #3282b8 50%, #0f4c75 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 10s ease infinite;
+      color: white;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* HOME SCREEN */
+    .home-screen {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .home-title {
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+      background: linear-gradient(45deg, #fff, #ffd700, #fff);
+      background-size: 200% 200%;
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes textShimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .home-subtitle {
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+      margin-bottom: 40px;
+      opacity: 0.9;
+      font-weight: 300;
+    }
+
+    .game-modes {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .mode-btn {
+      background: linear-gradient(135deg, #ffd700, #ffed4a);
+      color: #1a202c;
+      padding: 20px 40px;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 30px rgba(255, 215, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      min-width: 280px;
+    }
+
+    .mode-btn:nth-child(2) {
+      background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+      box-shadow: 0 8px 30px rgba(255, 107, 107, 0.4);
+    }
+
+    .mode-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      transition: all 0.5s;
+    }
+
+    .mode-btn:hover::before {
+      left: 100%;
+    }
+
+    .mode-btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 12px 40px rgba(255, 215, 0, 0.5);
+    }
+
+    .mode-btn:nth-child(2):hover {
+      box-shadow: 0 12px 40px rgba(255, 107, 107, 0.5);
+    }
+
+    /* GAME SCREEN */
+    .game-screen {
+      height: 100vh;
+      display: none;
+      flex-direction: column;
+      padding: 15px;
+      gap: 15px;
+    }
+
+    .game-header {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .game-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      background: linear-gradient(45deg, #fff, #ffd700);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .scores {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .score-card {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 8px 15px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      min-width: 80px;
+    }
+
+    .score-label {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      margin-bottom: 2px;
+    }
+
+    .score-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #ffd700;
+    }
+
+    .game-area {
+      flex: 1;
+      display: grid;
+      grid-template-rows: 1fr auto 1fr;
+      gap: 15px;
+      min-height: 0;
+    }
+
+    .player-section {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .player-section.bot {
+      background: rgba(255, 107, 107, 0.15);
+    }
+
+    .player-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-align: center;
+      color: #ffd700;
+    }
+
+    .hand {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      align-items: center;
+      flex: 1;
+    }
+
+    .table {
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(15px);
+      border-radius: 15px;
+      padding: 15px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    .table-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+
+    .turn-indicator {
+      color: #ffd700;
+      font-weight: 600;
+    }
+
+    .briscola-display {
+      color: #ffd700;
+      font-weight: 600;
+    }
+
+    .played-cards {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      align-items: center;
+      min-height: 80px;
+    }
+
+    .card {
+      width: 50px;
+      height: 70px;
+      border-radius: 8px;
+      background: linear-gradient(145deg, #ffffff, #f0f0f0);
+      color: #333;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+      border: 2px solid #ddd;
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .card.bot-card {
+      background: linear-gradient(145deg, #2d3748, #4a5568);
+      color: white;
+      cursor: default;
+    }
+
+    .card.bot-card.hidden {
+      background: linear-gradient(145deg, #4a5568, #2d3748);
+      color: transparent;
+    }
+
+    .card.bot-card.hidden::after {
+      content: '🎴';
+      position: absolute;
+      color: #ffd700;
+      font-size: 16px;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+      transition: all 0.3s;
+    }
+
+    .card:hover::before {
+      left: 100%;
+    }
+
+    .card:hover:not(.bot-card) {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      border-color: #ffd700;
+    }
+
+    .card.red {
+      color: #dc2626;
+    }
+
+    .card.black {
+      color: #1f2937;
+    }
+
+    .card.played {
+      animation: cardPlay 0.5s ease-out;
+    }
+
+    @keyframes cardPlay {
+      0% { transform: scale(1) rotateY(0deg); }
+      50% { transform: scale(1.1) rotateY(90deg); }
+      100% { transform: scale(1) rotateY(0deg); }
+    }
+
+    .game-controls {
+      text-align: center;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .control-btn {
+      background: linear-gradient(135deg, #ffd700, #ffed4a);
+      color: #1a202c;
+      padding: 10px 20px;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    }
+
+    .control-btn.secondary {
+      background: linear-gradient(135deg, #6b7280, #9ca3af);
+      box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+    }
+
+    .control-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+    }
+
+    .control-btn.secondary:hover {
+      box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+    }
+
+    /* END GAME SCREEN */
+    .end-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(15px);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      z-index: 1000;
+    }
+
+    .end-content {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border-radius: 25px;
+      padding: 40px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .end-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #ffd700;
+    }
+
+    .final-scores {
+      display: flex;
+      justify-content: space-around;
+      margin: 30px 0;
+      gap: 20px;
+    }
+
+    .final-score-card {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 15px;
+      padding: 15px;
+      flex: 1;
+    }
+
+    .final-score-label {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 5px;
+    }
+
+    .final-score-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #ffd700;
+    }
+
+    .winner-text {
+      font-size: 1.3rem;
+      margin: 20px 0;
+      font-weight: 600;
+    }
+
+    .end-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .end-btn {
+      background: linear-gradient(135deg, #ffd700, #ffed4a);
+      color: #1a202c;
+      padding: 12px 25px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    }
+
+    .end-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      transform: translateX(100%);
+      transition: all 0.3s ease;
+      z-index: 1001;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      font-size: 0.9rem;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    .bot-thinking {
+      opacity: 0.7;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .game-screen {
+        padding: 10px;
+        gap: 10px;
+      }
+
+      .card {
+        width: 45px;
+        height: 65px;
+        font-size: 11px;
+      }
+
+      .hand {
+        gap: 6px;
+      }
+
+      .played-cards {
+        gap: 15px;
+      }
+
+      .scores {
+        gap: 20px;
+      }
+
+      .table-info {
+        font-size: 0.8rem;
+      }
+
+      .mode-btn {
+        min-width: 250px;
+        font-size: 1rem;
+        padding: 15px 30px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        width: 40px;
+        height: 60px;
+        font-size: 10px;
+      }
+
+      .end-content {
+        padding: 25px;
+      }
+
+      .end-title {
+        font-size: 2rem;
+      }
+
+      .mode-btn {
+        min-width: 200px;
+        font-size: 0.9rem;
+        padding: 12px 25px;
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <!-- HOME SCREEN -->
+  <div class="home-screen" id="homeScreen">
+    <h1 class="home-title">🃏 BRISCOLA</h1>
+    <p class="home-subtitle">Il classico gioco di carte italiano con carte francesi</p>
+    <div class="game-modes">
+      <button class="mode-btn" id="pvpBtn">👥 Gioca 1 vs 1</button>
+      <button class="mode-btn" id="botBtn">🤖 Gioca vs Bot</button>
+      <div id="botLevelContainer" style="margin-top:10px; display:none;">
+        <label for="botLevel" style="color:#fff;font-weight:600;">Livello Bot:</label>
+        <select id="botLevel" style="margin-left:8px;padding:4px 10px;border-radius:8px;">
+          <option value="1">1 (Facile)</option>
+          <option value="2">2 (Medio)</option>
+          <option value="3">3 (Difficile)</option>
+        </select>
+        <button class="mode-btn" id="startBotBtn" style="margin-top:10px; font-size:1rem; min-width:150px;">Inizia</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="game-screen" id="gameScreen">
+    <div class="game-header">
+      <h1 class="game-title">🃏 Briscola</h1>
+      <div class="scores">
+        <div class="score-card">
+          <div class="score-label" id="player1Label">Giocatore 1</div>
+          <div class="score-value" id="punti1">0</div>
+        </div>
+        <div class="score-card">
+          <div class="score-label" id="player2Label">Giocatore 2</div>
+          <div class="score-value" id="punti2">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-area">
+      <div class="player-section" id="topPlayerSection">
+        <div class="player-title" id="topPlayerTitle">Giocatore 2</div>
+        <div class="hand" id="hand2"></div>
+      </div>
+
+      <div class="table">
+        <div class="table-info">
+          <div class="turn-indicator" id="turnIndicator">Turno: Giocatore 1</div>
+          <div class="briscola-display" id="briscola">Briscola: -</div>
+        </div>
+        <div class="played-cards" id="playedCards"></div>
+      </div>
+
+      <div class="player-section" id="bottomPlayerSection">
+        <div class="player-title" id="bottomPlayerTitle">Giocatore 1</div>
+        <div class="hand" id="hand1"></div>
+      </div>
+    </div>
+
+    <div class="game-controls">
+      <button class="control-btn" id="restartBtn">🔄 Nuova Partita</button>
+      <button class="control-btn secondary" id="backBtn">🏠 Menu</button>
+    </div>
+  </div>
+
+  <!-- END GAME SCREEN -->
+  <div class="end-screen" id="endScreen">
+    <div class="end-content">
+      <div class="end-title" id="endTitle">🎉 Partita Terminata</div>
+      <div class="final-scores">
+        <div class="final-score-card">
+          <div class="final-score-label" id="finalPlayer1Label">Giocatore 1</div>
+          <div class="final-score-value" id="finalScore1">0</div>
+        </div>
+        <div class="final-score-card">
+          <div class="final-score-label" id="finalPlayer2Label">Giocatore 2</div>
+          <div class="final-score-value" id="finalScore2">0</div>
+        </div>
+      </div>
+      <div class="winner-text" id="winnerText"></div>
+      <div class="end-buttons">
+        <button class="end-btn" id="playAgainBtn">🔄 Gioca Ancora</button>
+        <button class="end-btn" id="homeBtn">🏠 Menu Principale</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="notification" id="notification"></div>
+
+  <script>
+    // Valori e semi per Briscola con carte francesi
+    const valori = ["A", "2", "3", "4", "5", "6", "7", "J", "Q", "K"];
+    const semi = ["♠", "♥", "♦", "♣"];
+    let mazzo = [];
+    let manoGiocatore1 = [];
+    let manoGiocatore2 = [];
+    let briscola = "";
+    let carteSulTavolo = [];
+    let puntiGiocatore1 = 0;
+    let puntiGiocatore2 = 0;
+    let turnoCorrente = 1;
+    let gameActive = true;
+    let isBotMode = false;
+    let botThinking = false;
+    let botLevel = 1;
+
+    // Punti Briscola classica
+    const puntiBriscola = {
+      "A": 11, "3": 10, "K": 4, "Q": 3, "J": 2,
+      "2": 0, "4": 0, "5": 0, "6": 0, "7": 0
+    };
+
+    // Ordine di presa in Briscola
+    const ordineBriscola = ["A", "3", "K", "Q", "J", "7", "6", "5", "4", "2"];
+
+    // Screen management
+    function showScreen(screenId) {
+      document.getElementById('homeScreen').style.display = 'none';
+      document.getElementById('gameScreen').style.display = 'none';
+      document.getElementById('endScreen').style.display = 'none';
+      
+      if (screenId === 'game') {
+        document.getElementById('gameScreen').style.display = 'flex';
+      } else if (screenId === 'home') {
+        document.getElementById('homeScreen').style.display = 'flex';
+      } else if (screenId === 'end') {
+        document.getElementById('endScreen').style.display = 'flex';
+      }
+    }
+
+    // Utility per notifiche
+    function showNotification(message, duration = 2500) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.classList.add('show');
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, duration);
+    }
+
+    // Aggiorna indicatore turno
+    function updateTurnIndicator() {
+      const indicator = document.getElementById('turnIndicator');
+      const playerName = isBotMode ? 
+        (turnoCorrente === 1 ? 'Tu' : 'Bot') : 
+        `Giocatore ${turnoCorrente}`;
+      indicator.textContent = `Turno: ${playerName}`;
+    }
+
+    // Setup labels per modalità bot
+    function setupBotMode() {
+      document.getElementById('player1Label').textContent = 'Tu';
+      document.getElementById('player2Label').textContent = 'Bot';
+      document.getElementById('bottomPlayerTitle').textContent = 'Tu';
+      document.getElementById('topPlayerTitle').textContent = 'Bot';
+      document.getElementById('finalPlayer1Label').textContent = 'Tu';
+      document.getElementById('finalPlayer2Label').textContent = 'Bot';
+      document.getElementById('topPlayerSection').classList.add('bot');
+    }
+
+    // Setup labels per modalità PvP
+    function setupPvPMode() {
+      document.getElementById('player1Label').textContent = 'Giocatore 1';
+      document.getElementById('player2Label').textContent = 'Giocatore 2';
+      document.getElementById('bottomPlayerTitle').textContent = 'Giocatore 1';
+      document.getElementById('topPlayerTitle').textContent = 'Giocatore 2';
+      document.getElementById('finalPlayer1Label').textContent = 'Giocatore 1';
+      document.getElementById('finalPlayer2Label').textContent = 'Giocatore 2';
+      document.getElementById('topPlayerSection').classList.remove('bot');
+    }
+
+    // Crea il mazzo e lo mescola
+    function createDeck() {
+      mazzo = [];
+      semi.forEach(sem => {
+        valori.forEach(val => {
+          mazzo.push(`${val}${sem}`);
+        });
+      });
+      mazzo = mazzo.sort(() => Math.random() - 0.5);
+      briscola = mazzo[mazzo.length - 1].slice(-1);
+      document.getElementById("briscola").innerHTML = `Briscola: <strong>${briscola}</strong>`;
+    }
+
+    // Distribuisce le carte
+    function dealCards() {
+      manoGiocatore1 = mazzo.splice(0, 3);
+      manoGiocatore2 = mazzo.splice(0, 3);
+      aggiornaMano("hand1", manoGiocatore1, 1);
+      aggiornaMano("hand2", manoGiocatore2, 2);
+      document.getElementById("playedCards").innerHTML = "";
+      carteSulTavolo = [];
+      gameActive = true;
+      turnoCorrente = 1;
+      updateTurnIndicator();
+    }
+
+    // Determina il colore della carta
+    function getCardColor(carta) {
+      const seme = carta.slice(-1);
+      return (seme === '♥' || seme === '♦') ? 'red' : 'black';
+    }
+
+    // Mostra le carte del giocatore
+    function aggiornaMano(divId, mano, giocatore) {
+      const div = document.getElementById(divId);
+      div.innerHTML = "";
+      mano.forEach((carta, indice) => {
+        const cardDiv = document.createElement("div");
+        const isBot = isBotMode && giocatore === 2;
+        cardDiv.className = `card ${getCardColor(carta)} fade-in ${isBot ? 'bot-card hidden' : ''}`;
+        cardDiv.textContent = isBot ? '' : carta;
+        if (!isBot) {
+          cardDiv.onclick = () => giocaCarta(giocatore, indice);
+        }
+        cardDiv.style.animationDelay = `${indice * 0.1}s`;
+        div.appendChild(cardDiv);
+      });
+    }
+
+    document.getElementById('botLevel').onchange = (e) => {
+      botLevel = parseInt(e.target.value);
+    };
+
+    // Bot AI - sceglie la carta migliore in base al livello
+    function botChooseCard() {
+      if (botLevel === 1) {
+        // Livello 1: casuale
+        return Math.floor(Math.random() * manoGiocatore2.length);
+      }
+      if (botLevel === 2) {
+        // Livello 2: logica attuale (media)
+        if (carteSulTavolo.length === 0) {
+          // Gioca la carta di valore più basso
+          let minIndex = 0;
+          let minValue = 99;
+          manoGiocatore2.forEach((carta, i) => {
+            const valore = carta.slice(0, -1);
+            if (puntiBriscola[valore] < minValue) {
+              minValue = puntiBriscola[valore];
+              minIndex = i;
+            }
+          });
+          return minIndex;
+        } else {
+          // Prova a vincere se può, altrimenti gioca la più bassa
+          const cartaAvversario = carteSulTavolo[0].carta;
+          let bestWinIndex = -1;
+          let lowestIndex = 0;
+          let lowestValue = 99;
+          manoGiocatore2.forEach((carta, i) => {
+            if (confrontaCarteBot(cartaAvversario, carta) === 2) {
+              bestWinIndex = i;
+            }
+            const valore = carta.slice(0, -1);
+            if (puntiBriscola[valore] < lowestValue) {
+              lowestValue = puntiBriscola[valore];
+              lowestIndex = i;
+            }
+          });
+          return bestWinIndex !== -1 ? bestWinIndex : lowestIndex;
+        }
+      }
+      // Livello 3: usa la logica più avanzata (già presente)
+      if (carteSulTavolo.length === 0) {
+        let bestIndex = 0;
+        let bestScore = -1;
+        manoGiocatore2.forEach((carta, index) => {
+          const valore = carta.slice(0, -1);
+          const seme = carta.slice(-1);
+          let score = 0;
+          if (seme !== briscola) {
+            score = 10 - puntiBriscola[valore];
+          } else {
+            score = 5 - ordineBriscola.indexOf(valore);
+          }
+          if (score > bestScore) {
+            bestScore = score;
+            bestIndex = index;
+          }
+        });
+        return bestIndex;
+      } else {
+        const cartaAvversario = carteSulTavolo[0].carta;
+        const valoreAvversario = cartaAvversario.slice(0, -1);
+        const puntiInPalio = puntiBriscola[valoreAvversario];
+        let bestIndex = 0;
+        let canWin = false;
+        let bestWinIndex = -1;
+        let lowestIndex = 0;
+        let lowestValue = 999;
+        manoGiocatore2.forEach((carta, index) => {
+          const valore = carta.slice(0, -1);
+          const cardValue = puntiBriscola[valore];
+          if (confrontaCarteBot(cartaAvversario, carta) === 2) {
+            if (!canWin || cardValue < puntiBriscola[manoGiocatore2[bestWinIndex]?.slice(0, -1)]) {
+              canWin = true;
+              bestWinIndex = index;
+            }
+          }
+          if (cardValue < lowestValue) {
+            lowestValue = cardValue;
+            lowestIndex = index;
+          }
+        });
+        if (canWin && puntiInPalio >= 3) {
+          return bestWinIndex;
+        }
+        return lowestIndex;
+      }
+    }
+
+    // Confronta due carte per il bot
+    function confrontaCarteBot(c1, c2) {
+      const valore1 = c1.slice(0, -1);
+      const seme1 = c1.slice(-1);
+      const valore2 = c2.slice(0, -1);
+      const seme2 = c2.slice(-1);
+
+      const èBriscola1 = seme1 === briscola;
+      const èBriscola2 = seme2 === briscola;
+
+      if (èBriscola1 && !èBriscola2) return 1;
+      if (!èBriscola1 && èBriscola2) return 2;
+
+      if (seme1 === seme2) {
+        const i1 = ordineBriscola.indexOf(valore1);
+        const i2 = ordineBriscola.indexOf(valore2);
+        return i1 > i2 ? 1 : -1;
+      }
+
+      return 0;
+    }
+
+    // Confronta due carte per determinare chi vince la mano
+    function confrontaCarte(c1, c2) {
+      const valore1 = c1.slice(0, -1);
+      const seme1 = c1.slice(-1);
+      const valore2 = c2.slice(0, -1);
+      const seme2 = c2.slice(-1);
+
+      const èBriscola1 = seme1 === briscola;
+      const èBriscola2 = seme2 === briscola;
+
+      if (èBriscola1 && !èBriscola2) return 1;
+      if (!èBriscola1 && èBriscola2) return 2;
+
+      if (seme1 === seme2) {
+        const i1 = ordineBriscola.indexOf(valore1);
+        const i2 = ordineBriscola.indexOf(valore2);
+        return i1 < i2 ? 1 : 2;
+      }
+
+      // Se nessuna delle due è briscola e i semi sono diversi, vince chi ha giocato per primo (giocatore 1)
+      return 1;
+    }
+
+    // Gioca una carta
+    function giocaCarta(giocatore, indice) {
+      if (!gameActive) return;
+
+      const mano = giocatore === 1 ? manoGiocatore1 : manoGiocatore2;
+      const cartaGiocata = mano[indice];
+      const semeCarta = cartaGiocata.slice(-1);
+
+      // Rimuovi la carta dalla mano del giocatore
+      mano.splice(indice, 1);
+      aggiornaMano(giocatore === 1 ? "hand1" : "hand2", mano, giocatore);
+
+      // Aggiungi la carta all'array delle carte sul tavolo
+      carteSulTavolo.push({ giocatore, carta: cartaGiocata });
+      aggiornaCarteSulTavolo();
+
+      // Controlla se ci sono già due carte sul tavolo
+      if (carteSulTavolo.length === 2) {
+        setTimeout(() => {
+          gestisciPresa();
+        }, 1000);
+      } else {
+        // Cambia turno
+        turnoCorrente = turnoCorrente === 1 ? 2 : 1;
+        updateTurnIndicator();
+
+        // Se è il turno del bot, attendi un attimo e poi fai scegliere al bot
+        if (isBotMode && turnoCorrente === 2) {
+          botThinking = true;
+          setTimeout(() => {
+            const botCardIndex = botChooseCard();
+            giocaCarta(2, botCardIndex);
+            botThinking = false;
+          }, 1000);
+        }
+      }
+    }
+
+    // Aggiorna la visualizzazione delle carte sul tavolo
+    function aggiornaCarteSulTavolo() {
+      const div = document.getElementById("playedCards");
+      div.innerHTML = "";
+      carteSulTavolo.forEach((cartaInfo) => {
+        const cardDiv = document.createElement("div");
+        cardDiv.className = `card ${getCardColor(cartaInfo.carta)} played`;
+        cardDiv.textContent = cartaInfo.carta;
+        div.appendChild(cardDiv);
+      });
+    }
+
+    // Gestisce la presa delle carte
+    function gestisciPresa() {
+      const [carta1, carta2] = carteSulTavolo;
+
+      const vincitore = confrontaCarte(carta1.carta, carta2.carta);
+      if (vincitore === 1) {
+        puntiGiocatore1 += calcolaPunti(carta1.carta, carta2.carta);
+        showNotification("Giocatore 1 vince la mano!");
+      } else if (vincitore === 2) {
+        puntiGiocatore2 += calcolaPunti(carta1.carta, carta2.carta);
+        showNotification("Giocatore 2 vince la mano!");
+      } else {
+        showNotification("Pareggio nella mano!");
+      }
+
+      // Aggiorna punteggi
+      document.getElementById("punti1").textContent = puntiGiocatore1;
+      document.getElementById("punti2").textContent = puntiGiocatore2;
+
+      // Controlla se la partita è finita
+      if (mazzo.length === 0 || manoGiocatore1.length === 0 || manoGiocatore2.length === 0) {
+        finePartita();
+      } else {
+        // Pesca nuove carte
+        setTimeout(() => {
+          pescaCarte();
+          turnoCorrente = turnoCorrente === 1 ? 2 : 1;
+          updateTurnIndicator();
+        }, 1500);
+      }
+
+      // Pulisci le carte sul tavolo
+      carteSulTavolo = [];
+      setTimeout(() => {
+        aggiornaCarteSulTavolo();
+      }, 500);
+    }
+
+    // Calcola i punti per la presa effettuata
+    function calcolaPunti(carta1, carta2) {
+      const valore1 = carta1.slice(0, -1);
+      const valore2 = carta2.slice(0, -1);
+      return puntiBriscola[valore1] + puntiBriscola[valore2];
+    }
+
+    // Funzione per pescare carte dal mazzo
+    function pescaCarte() {
+      if (mazzo.length === 0) return;
+
+      // Pesca una carta per ogni giocatore se possibile
+      if (manoGiocatore1.length < 3) {
+        manoGiocatore1.push(mazzo.pop());
+      }
+      if (manoGiocatore2.length < 3) {
+        manoGiocatore2.push(mazzo.pop());
+      }
+
+      // Aggiorna le mani dei giocatori
+      aggiornaMano("hand1", manoGiocatore1, 1);
+      aggiornaMano("hand2", manoGiocatore2, 2);
+    }
+
+    // Funzione per gestire la fine della partita
+    function finePartita() {
+      gameActive = false;
+      const punteggiFinali = calcolaPunteggiFinali();
+      mostraRisultati(punteggiFinali);
+      showScreen('end');
+    }
+
+    // Calcola i punteggi finali tenendo conto delle carte rimaste in mano
+    function calcolaPunteggiFinali() {
+      let punteggi = [0, 0];
+
+      // Punti accumulati
+      punteggi[0] = puntiGiocatore1;
+      punteggi[1] = puntiGiocatore2;
+
+      // Punti per carte rimaste in mano
+      [manoGiocatore1, manoGiocatore2].forEach((mano, index) => {
+        mano.forEach(carta => {
+          const valore = carta.slice(0, -1);
+          punteggi[index] += puntiBriscola[valore];
+        });
+      });
+
+      return punteggi;
+    }
+
+    // Mostra i risultati alla fine della partita
+    function mostraRisultati(punteggi) {
+      document.getElementById("finalScore1").textContent = punteggi[0];
+      document.getElementById("finalScore2").textContent = punteggi[1];
+
+      const vincitore = punteggi[0] > punteggi[1] ? "Giocatore 1" : "Giocatore 2";
+      document.getElementById("winnerText").textContent = `Vince ${vincitore}!`;
+    }
+
+    // Gestione click sui pulsanti della home
+    document.getElementById('pvpBtn').onclick = () => {
+      puntiGiocatore1 = 0;
+      puntiGiocatore2 = 0;
+      document.getElementById("punti1").textContent = 0;
+      document.getElementById("punti2").textContent = 0;
+      isBotMode = false;
+      setupPvPMode();
+      showScreen('game');
+      createDeck();
+      dealCards();
+    };
+
+    document.getElementById('botBtn').onclick = () => {
+      document.getElementById('botLevelContainer').style.display = 'block';
+      // Nascondi i bottoni modalità per evitare doppio click
+      document.getElementById('pvpBtn').style.display = 'none';
+      document.getElementById('botBtn').style.display = 'none';
+    };
+
+    // Quando si clicca "Inizia" dopo aver scelto il livello, parte la partita
+    document.getElementById('startBotBtn').onclick = () => {
+      puntiGiocatore1 = 0;
+      puntiGiocatore2 = 0;
+      document.getElementById("punti1").textContent = 0;
+      document.getElementById("punti2").textContent = 0;
+      isBotMode = true;
+      setupBotMode();
+      showScreen('game');
+      createDeck();
+      dealCards();
+      // Ripristina la home per la prossima volta
+      document.getElementById('botLevelContainer').style.display = 'none';
+      document.getElementById('pvpBtn').style.display = 'block';
+      document.getElementById('botBtn').style.display = 'block';
+    };
+
+    // Gestione click pulsante Nuova Partita
+    document.getElementById('restartBtn').onclick = () => {
+      puntiGiocatore1 = 0;
+      puntiGiocatore2 = 0;
+      document.getElementById("punti1").textContent = 0;
+      document.getElementById("punti2").textContent = 0;
+      createDeck();
+      if (isBotMode) {
+        setupBotMode();
+      } else {
+        setupPvPMode();
+      }
+      showScreen('game');
+      dealCards();
+    };
+
+    // Gestione click pulsante Menu
+    document.getElementById('backBtn').onclick = () => {
+      showScreen('home');
+    };
+
+    // Gestione click pulsante Gioca Ancora nella schermata di fine partita
+    document.getElementById('playAgainBtn').onclick = () => {
+      puntiGiocatore1 = 0;
+      puntiGiocatore2 = 0;
+      document.getElementById("punti1").textContent = 0;
+      document.getElementById("punti2").textContent = 0;
+      createDeck();
+      if (isBotMode) {
+        setupBotMode();
+      } else {
+        setupPvPMode();
+      }
+      showScreen('game');
+      dealCards();
+    };
+
+    // Gestione click pulsante Menu Principale nella schermata di fine partita
+    document.getElementById('homeBtn').onclick = () => {
+      showScreen('home');
+    };
+
+    // Inizializza la schermata home all'avvio
+    showScreen('home');
+  </script>
+</body>
+</html>
